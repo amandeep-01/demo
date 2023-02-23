@@ -1,6 +1,8 @@
+
 variable "prefix" {
   description = "The prefix name of customer to be displayed in AWS console and resource"
   type        = string
+  default = null
 }
 
 variable "environment" {
@@ -17,6 +19,12 @@ variable "tags" {
 variable "name" {
   description = "The Name of luanch teamplate"
   type        = string
+  default = null
+}
+
+variable "description"{
+  description ="description of the template"
+  type = string
 }
 
 ################################################################################
@@ -66,13 +74,14 @@ variable "vpc_security_group_ids" {
 variable "launch_template_default_version" {
   description = "Default version of the launch template"
   type        = string
-  default     = null
+  default = null
+  
 }
 
 variable "update_launch_template_default_version" {
   description = "Whether to update the launch templates default version on each update. Conflicts with `launch_template_default_version`"
   type        = bool
-  default     = true
+  default     = null
 }
 
 variable "disable_api_termination" {
@@ -118,6 +127,12 @@ variable "cpu_options" {
 }
 
 variable "credit_specification" {
+  description = "Customize the credit specification of the instance"
+  type        = map(string)
+  default     = null
+}
+
+variable "maintenance_options" {
   description = "Customize the credit specification of the instance"
   type        = map(string)
   default     = null
@@ -196,5 +211,17 @@ variable "placement" {
 variable "launch_template_tags" {
   description = "A map of additional tags to add to the tag_specifications of launch template created"
   type        = map(string)
+  default     = {}
+}
+
+variable "private_dns_name_options" {
+  description = "The options for the instance hostname. The default values are inherited from the subnet"
+  type        = map(string)
+  default     = {}
+}
+
+variable "instance_requirements" {
+  description = "The attribute requirements for the type of instance. If present then `instance_type` cannot be present"
+  type        = any
   default     = {}
 }

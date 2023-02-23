@@ -1,6 +1,8 @@
-resource "aws_launch_template" "this" {
-  name_prefix = local.prefix
-  description = "custom aws_launch_template"
+resource "aws_launch_template" "mytemplate" {
+  
+  name = var.name
+  name_prefix = var.prefix
+  description = var.description
 
   ebs_optimized = var.ebs_optimized
   image_id      = var.ami_id
@@ -50,6 +52,7 @@ resource "aws_launch_template" "this" {
         for_each = try([capacity_reservation_specification.value.capacity_reservation_target], [])
         content {
           capacity_reservation_id = lookup(capacity_reservation_target.value, "capacity_reservation_id", null)
+          capacity_reservation_resource_group_arn =lookup(capacity_reservation_target.value,"capacity_reservation_resource_group_arn",null)
         }
       }
     }
@@ -124,6 +127,110 @@ resource "aws_launch_template" "this" {
     }
   }
 
+  dynamic "instance_requirements" {
+    for_each = length(var.instance_requirements) > 0 ? [var.instance_requirements] : []
+    content {
+
+      dynamic "accelerator_count" {
+        for_each = try([instance_requirements.value.accelerator_count], [])
+        content {
+          max = try(accelerator_count.value.max, null)
+          min = try(accelerator_count.value.min, null)
+        }
+      }
+
+      accelerator_manufacturers = try(instance_requirements.value.accelerator_manufacturers, [])
+      accelerator_names         = try(instance_requirements.value.accelerator_names, [])
+
+      dynamic "accelerator_total_memory_mib" {
+        for_each = try([instance_requirements.value.accelerator_total_memory_mib], [])
+        content {
+          max = try(accelerator_total_memory_mib.value.max, null)
+          min = try(accelerator_total_memory_mib.value.min, null)
+        }
+      }
+
+      accelerator_types = try(instance_requirements.value.accelerator_types, [])
+      bare_metal        = try(instance_requirements.value.bare_metal, null)
+
+      dynamic "baseline_ebs_bandwidth_mbps" {
+        for_each = try([instance_requirements.value.baseline_ebs_bandwidth_mbps], [])
+        content {
+          max = try(baseline_ebs_bandwidth_mbps.value.max, null)
+          min = try(baseline_ebs_bandwidth_mbps.value.min, null)
+        }
+      }
+
+      burstable_performance   = try(instance_requirements.value.burstable_performance, null)
+      cpu_manufacturers       = try(instance_requirements.value.cpu_manufacturers, [])
+      excluded_instance_types = try(instance_requirements.value.excluded_instance_types, [])
+      instance_generations    = try(instance_requirements.value.instance_generations, [])
+      local_storage           = try(instance_requirements.value.local_storage, null)
+      local_storage_types     = try(instance_requirements.value.local_storage_types, [])
+
+      dynamic "memory_gib_per_vcpu" {
+        for_each = try([instance_requirements.value.memory_gib_per_vcpu], [])
+        content {
+          max = try(memory_gib_per_vcpu.value.max, null)
+          min = try(memory_gib_per_vcpu.value.min, null)
+        }
+      }
+
+      dynamic "memory_mib" {
+        for_each = [instance_requirements.value.memory_mib]
+        content {
+          max = try(memory_mib.value.max, null)
+          min = memory_mib.value.min
+        }
+      }
+
+      dynamic "network_interface_count" {
+        for_each = try([instance_requirements.value.network_interface_count], [])
+        content {
+          max = try(network_interface_count.value.max, null)
+          min = try(network_interface_count.value.min, null)
+        }
+      }
+
+      on_demand_max_price_percentage_over_lowest_price = try(instance_requirements.value.on_demand_max_price_percentage_over_lowest_price, null)
+      require_hibernate_support                        = try(instance_requirements.value.require_hibernate_support, null)
+      spot_max_price_percentage_over_lowest_price      = try(instance_requirements.value.spot_max_price_percentage_over_lowest_price, null)
+
+      dynamic "total_local_storage_gb" {
+        for_each = try([instance_requirements.value.total_local_storage_gb], [])
+        content {
+          max = try(total_local_storage_gb.value.max, null)
+          min = try(total_local_storage_gb.value.min, null)
+        }
+      }
+
+      dynamic "vcpu_count" {
+        for_each = [instance_requirements.value.vcpu_count]
+        content {
+          max = try(vcpu_count.value.max, null)
+          min = vcpu_count.value.min
+        }
+      }
+    }
+  }
+
+  dynamic "maintenance_options" {
+    for_each = var.maintenance_options != null ? [var.maintenance_options] : []
+      content {
+          auto_recovery = maintenance_options.value.auto_recovery
+
+          }
+      }
+
+  dynamic "private_dns_name_options" {
+    for_each = length(var.private_dns_name_options) > 0 ? [var.private_dns_name_options] : []
+    content {
+      enable_resource_name_dns_aaaa_record = try(private_dns_name_options.value.enable_resource_name_dns_aaaa_record, null)
+      enable_resource_name_dns_a_record    = try(private_dns_name_options.value.enable_resource_name_dns_a_record, null)
+      hostname_type                        = private_dns_name_options.value.hostname_type
+    }
+  }
+
   dynamic "license_specification" {
     for_each = var.license_specifications != null ? [var.license_specifications] : []
     content {
@@ -160,11 +267,17 @@ resource "aws_launch_template" "this" {
       interface_type               = lookup(network_interfaces.value, "interface_type", null)
       ipv4_addresses               = try(network_interfaces.value.ipv4_addresses, [])
       ipv4_address_count           = lookup(network_interfaces.value, "ipv4_address_count", null)
+      ipv4_prefix_count            = lookup(network_interfaces.value, "ipv4_prefix_count", null)
+      ipv4_prefixes                = lookup(network_interfaces.value, "ipv4_prefixes", null)
+      ipv6_prefix_count            = lookup(network_interfaces.value, "ipv6_prefix_count", null)
+      ipv6_prefixes                = lookup(network_interfaces.value, "ipv6_prefixes", null)
+      network_card_index           = lookup(network_interfaces.value, "network_card_index", null)
+
       ipv6_addresses               = try(network_interfaces.value.ipv6_addresses, [])
       ipv6_address_count           = lookup(network_interfaces.value, "ipv6_address_count", null)
       network_interface_id         = lookup(network_interfaces.value, "network_interface_id", null)
       private_ip_address           = lookup(network_interfaces.value, "private_ip_address", null)
-      security_groups              = lookup(network_interfaces.value, "security_groups", null)
+      security_groups              = lookup(network_interfaces.value, "security_groups", null) 
       subnet_id                    = lookup(network_interfaces.value, "subnet_id", null)
     }
   }
@@ -172,13 +285,14 @@ resource "aws_launch_template" "this" {
   dynamic "placement" {
     for_each = var.placement != null ? [var.placement] : []
     content {
-      affinity          = lookup(placement.value, "affinity", null)
-      availability_zone = lookup(placement.value, "availability_zone", null)
-      group_name        = lookup(placement.value, "group_name", null)
-      host_id           = lookup(placement.value, "host_id", null)
-      spread_domain     = lookup(placement.value, "spread_domain", null)
-      tenancy           = lookup(placement.value, "tenancy", null)
-      partition_number  = lookup(placement.value, "partition_number", null)
+      affinity                = lookup(placement.value, "affinity", null)
+      availability_zone       = lookup(placement.value, "availability_zone", null)
+      group_name              = lookup(placement.value, "group_name", null)
+      host_id                 = lookup(placement.value, "host_id", null)
+      host_resource_group_arn = lookup(placement.value, "host_resource_group_arn", null)
+      spread_domain           = lookup(placement.value, "spread_domain", null)
+      tenancy                 = lookup(placement.value, "tenancy", null)
+      partition_number        = lookup(placement.value, "partition_number", null)
     }
   }
 
@@ -186,7 +300,7 @@ resource "aws_launch_template" "this" {
     for_each = toset(["instance", "volume", "network-interface"])
     content {
       resource_type = tag_specifications.key
-      tags          = merge(var.tags, { Name = local.prefix }, var.launch_template_tags)
+      tags          = merge(var.tags, { Name = var.prefix }, var.launch_template_tags)
     }
   }
 
