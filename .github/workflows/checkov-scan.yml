@@ -1,6 +1,6 @@
 name: Checkov Test
 on:
-  workflow_dispatch:
+  [push]
 
 jobs:
   checkov-job:
