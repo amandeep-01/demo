@@ -225,3 +225,9 @@ variable "instance_requirements" {
   type        = any
   default     = {}
 }
+
+variable "disable_api_stop" {
+   description ="If true, enables EC2 Instance Stop Protection"
+   type = bool
+   default = false
+}

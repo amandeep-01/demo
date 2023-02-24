@@ -1,8 +1,4 @@
-provider "aws" {
-  region = "us-east-2"
- 
- 
-}
+
 module "ec2_template" {
   source = "../.."
 
@@ -37,16 +33,19 @@ module "ec2_template" {
   instance_market_options = var.instance_market_options
 
   #template configure
-  #   user_data                              = var.user_data
-  block_device_mappings = var.block_device_mappings
+  user_data                 = base64encode(var.user_data)
+  block_device_mappings     = var.block_device_mappings
   ami_id                    = var.ami_id
   key_name                  = var.key_name
   vpc_security_group_ids    = var.vpc_security_group_ids
   ebs_optimized             = var.ebs_optimized
   instance_type             = var.instance_type
+  #instance_requirement     = var.instance_requirement
   disable_api_termination   = var.disable_api_termination #enables EC2 instance termination protection
+  disable_api_stop          = var.disable_api_stop
   enable_monitoring         = var.enable_monitoring
   placement                = var.placement
+  license_specifications    = var.license_configuration_arn
   network_interfaces        = var.network_interfaces
   iam_instance_profile      = var.iam_instance_profile
 
